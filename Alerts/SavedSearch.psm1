@@ -23,7 +23,7 @@
 #	}
 #	catch
 #	{
-#		throw $_.Exception;
+#		throw $_;
 #	}
 #
 
@@ -127,7 +127,7 @@ Function Get-OMSSavedSearch
 	}
 	catch
 	{
-		throw $_.Exception;
+		throw $_;
 	}
 }
 Function Get-OMSSavedSearchSchedule
@@ -221,7 +221,7 @@ Function Get-OMSSavedSearchSchedule
 	}
 	catch
 	{
-		throw $_.Exception;
+		throw $_;
 	}
 }
 Function Get-OMSSavedSearchAction
@@ -340,16 +340,52 @@ Function Get-OMSSavedSearchAction
 	}
 	catch
 	{
-		throw $_.Exception;
+		throw $_;
 	}
 }
 Function New-OMSSavedSearch
 {
 	<#
 		.SYNOPSIS
+			Create a new saved search in OMS
 		.DESCRIPTION
-		.PARAMETER
+			This function will create a new SavedSearch in OMS
+		.PARAMETER SubscriptionId
+			The SubscriptId that the OMS Workspace is tied to
+		.PARAMETER ResourceGroupName
+			The name of the ResourceGroup where the OMS object can be found in the Portak
+		.PARAMETER WorkspaceName
+			The name of the Workspace you are accessing
+		.PARAMETER Subscription
+			A subscription object that contains subscriptionId as a property. You can use the Get-AzureRmSubscription
+			cmdlet to retrieve this
+		.PARAMETER Workspace
+			A workspace object that contains the resourceGroupName and Name property of a workspace. You can use the
+			Get-AzureRmOperationalInsightsWorkspace, or the Get-OMSWorkspace cmdlet in this module
+		.PARAMETER SavedSearchName
+			The name of the SavedSearch you wish to get
+		.PARAMETER DisplayName
+			The name of the search displayed in OMS
+		.PARAMETER Category
+			The name of the category to group this search into. Categories are all ad-hoc
+		.PARAMETER OmsQuery
+			A valid OMS Log Search query
+		.PARAMETER Version
+			A number representing the version of this search
 		.EXAMPLE
+			$Subscription = Get-AzureRmSubscription
+			$Workspace = Get-AzureRmOperationalInsightsWorkspace
+
+			New-OMSSavedSearch -Subscription $Subscription -Workspace $Workspace -SavedSearchName EventID6008 -DisplayName 'This is the saved search' -Category EVENTIDs -OmsQuery 'Type=Event EventLog="System" EventID:6008' -Version 1
+
+
+			ResourceId        : subscriptions/64d906f5-cc8b-48c0-84fc-9529834ec29b/resourceGroups/OMS-RG/providers/Microsoft.OperationalInsights/workspaces/OMSWorkspace/savedSearches/eventid6008
+			ResourceName      : OMSWorkspace/eventid6008
+			ResourceType      : Microsoft.OperationalInsights/workspaces/savedSearches
+			ResourceGroupName : OMS-RG
+			Properties        : @{Category=EVENTIDs; DisplayName=This is the saved search; Query=Type=Event EventLog="System" EventID:6008; Version=1}
+			ETag              : W/"datetime'2016-11-04T21%3A47%3A28.3364814Z'"
+
 		.NOTES
 			You will need to be logged into the subscription for this to work.
 			Please use the Login-AzureRmAccount to access the Azure Subscription.
@@ -409,7 +445,7 @@ Function New-OMSSavedSearch
 	}
 	catch
 	{
-		throw $_.Exception;
+		throw $_;
 	}
 }
 Function Set-OMSSavedSearch
