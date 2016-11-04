@@ -249,11 +249,13 @@ Function Get-OMSSavedSearchAction
 			Get-AzureRmOperationalInsightsWorkspace, or the Get-OMSWorkspace cmdlet in this module
 		.PARAMETER SavedSearch
 			A savedsearch object that is returned from Get-OMSSavedSearch cmdlet
+		.PARAMETER ActionType
+			This is one of two current ActionTypes, Alert or Webhook.
 		.EXAMPLE
 			$Subscription = Get-AzureRmSubscription
 			$Workspace = Get-AzureRmOperationalInsightsWorkspace
 
-			Get-OMSSavedSearchAction -Subscription $Subscription -Workspace $Workspace -SavedSearch $SavedSearch
+			Get-OMSSavedSearchAction -Subscription $Subscription -Workspace $Workspace -SavedSearch $SavedSearch -ActionType Alert
 
 
 			Name              : MySavedSearch|MySavedSearch|mythreshold
@@ -264,22 +266,6 @@ Function Get-OMSSavedSearchAction
 			Properties        : @{Type=Alert; Name=System Log - EventID 6008 - Unexpected Shutdown; Description=This monitor triggers an alert when the system log records an unexpected shutdown event (6008); Threshold=; Severity=Critical; ScheduleTypeSpecified=False; Version=1}
 			ETag              : W/"datetime'2016-09-21T11%3A03%3A13.3808626Z'"
 
-			Name              : MySavedSearch|MySavedSearch|mywebhookaction
-			ResourceId        : subscriptions/64d906f5-cc8b-48c0-84fc-9529834ec29b/resourceGroups/OMS-RG/providers/Microsoft.OperationalInsights/workspaces/OMSWorkspace/savedSearches/MySavedSearch/schedules/MySavedSearch/Actions/mywebhookaction
-			ResourceName      : OMSWorkspace/MySavedSearch/MySavedSearch/mywebhookaction
-			ResourceType      : Microsoft.OperationalInsights/workspaces/savedSearches/schedules/Actions
-			ResourceGroupName : OMS-RG
-			Properties        : @{Type=Webhook; Name=System Log - EventID 6008 - Unexpected Shutdown; WebhookUri=https://webhook.localhost.com/api/webhooks/; CustomPayload={
-								"workspaceId":"#workspaceid",
-								"alertName":"#alertrulename",
-								"alertValue":"#thresholdvalue",
-								"searchInterval":"#searchinterval",
-								"IncludeSearchResults":true ,
-								"Remediation" : "https://wiki.localhost.com/Azure+Alerts#AzureAlerts-SystemLog-EventID6008-UnexpectedShutdown",
-								"Description": "#description",
-								"NotificationType":"public"
-								}; Version=1}
-			ETag              : W/"datetime'2016-09-21T11%3A03%3A14.162071Z'"
 		.EXAMPLE
 			Get-OMSSavedSearchAction -SubscriptionId $Subscription.SubscriptionId -ResourceGroupName $Workspace.ResourceGroupName -WorkspaceName $Workspace.Name -SavedSearchName MySavedSearch
 
@@ -330,7 +316,11 @@ Function Get-OMSSavedSearchAction
 		[Parameter(Mandatory=$True,ParameterSetName='objects',Position=2)]
 		[object]$Workspace,
 		[Parameter(Mandatory=$True,ParameterSetName='objects',Position=3)]
-		[object]$SavedSearch
+		[object]$SavedSearch,
+		[Parameter(Mandatory=$False,ParameterSetName='strings')]
+		[Parameter(Mandatory=$False,ParameterSetName='objects')]
+		[ValidateSet('Alert','Webhook')]
+		[string]$ActionType
 	)
 	try
 	{
@@ -347,7 +337,7 @@ Function Get-OMSSavedSearchAction
 			$ResourceId = "/subscriptions/$($SubscriptionId)/resourceGroups/$($ResourceGroupName)/providers/Microsoft.OperationalInsights/workspaces/$($WorkspaceName)/savedSearches/$($SavedSearchName)/schedules/$($SavedSearchName)/actions";
 		}
 
-		Get-AzureRmResource -ResourceId $ResourceId -ApiVersion "2015-03-20"
+		Get-AzureRmResource -ResourceId $ResourceId -ApiVersion "2015-03-20" |ForEach-Object {$_ |Where-Object {$_.Properties.Type -eq $ActionType}}
 	}
 	catch
 	{
