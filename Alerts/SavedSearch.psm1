@@ -123,7 +123,7 @@ Function Get-OMSSavedSearch
 			$ResourceId += "/$($SavedSearchName)";
 		}
 
-		Get-AzureRmResource -ResourceId $ResourceId -ApiVersion "2015-03-20"
+		Get-AzureRmResource -ResourceId $ResourceId -ApiVersion "2015-03-20";
 	}
 	catch
 	{
@@ -217,14 +217,13 @@ Function Get-OMSSavedSearchSchedule
 			$ResourceId = "/subscriptions/$($SubscriptionId)/resourceGroups/$($ResourceGroupName)/providers/Microsoft.OperationalInsights/workspaces/$($WorkspaceName)/savedSearches/$($SavedSearchName)/schedules/$($SavedSearchName)";
 		}
 
-		Get-AzureRmResource -ResourceId $ResourceId -ApiVersion "2015-03-20"
+		Get-AzureRmResource -ResourceId $ResourceId -ApiVersion "2015-03-20";
 	}
 	catch
 	{
 		throw $_.Exception;
 	}
 }
-
 Function Get-OMSSavedSearchAction
 {
 	<#
@@ -337,10 +336,155 @@ Function Get-OMSSavedSearchAction
 			$ResourceId = "/subscriptions/$($SubscriptionId)/resourceGroups/$($ResourceGroupName)/providers/Microsoft.OperationalInsights/workspaces/$($WorkspaceName)/savedSearches/$($SavedSearchName)/schedules/$($SavedSearchName)/actions";
 		}
 
-		Get-AzureRmResource -ResourceId $ResourceId -ApiVersion "2015-03-20" |ForEach-Object {$_ |Where-Object {$_.Properties.Type -eq $ActionType}}
+		Get-AzureRmResource -ResourceId $ResourceId -ApiVersion "2015-03-20" |ForEach-Object {$_ |Where-Object {$_.Properties.Type -eq $ActionType}};
 	}
 	catch
 	{
 		throw $_.Exception;
+	}
+}
+Function New-OMSSavedSearch
+{
+	<#
+		.SYNOPSIS
+		.DESCRIPTION
+		.PARAMETER
+		.EXAMPLE
+		.NOTES
+			You will need to be logged into the subscription for this to work.
+			Please use the Login-AzureRmAccount to access the Azure Subscription.
+		.LINK
+	#>
+	[CmdletBinding()]
+	param
+	(
+		[Parameter(Mandatory=$True,ParameterSetName='strings',Position=1)]
+		[string]$SubscriptionId,
+		[Parameter(Mandatory=$True,ParameterSetName='strings',Position=2)]
+		[string]$ResourceGroupName,
+		[Parameter(Mandatory=$True,ParameterSetName='strings',Position=3)]
+		[string]$WorkspaceName,
+		[Parameter(Mandatory=$True,ParameterSetName='objects',Position=1)]
+		[object]$Subscription,
+		[Parameter(Mandatory=$True,ParameterSetName='objects',Position=2)]
+		[object]$Workspace,
+		[Parameter(Mandatory=$True,ParameterSetName='strings')]
+		[Parameter(Mandatory=$True,ParameterSetName='objects')]
+		[object]$SavedSearchName,
+		[Parameter(Mandatory=$True,ParameterSetName='strings')]
+		[Parameter(Mandatory=$True,ParameterSetName='objects')]
+		[string]$DisplayName,
+		[Parameter(Mandatory=$True,ParameterSetName='strings')]
+		[Parameter(Mandatory=$True,ParameterSetName='objects')]
+		[string]$Category,
+		[Parameter(Mandatory=$True,ParameterSetName='strings')]
+		[Parameter(Mandatory=$True,ParameterSetName='objects')]
+		[string]$OmsQuery,
+		[Parameter(Mandatory=$True,ParameterSetName='strings')]
+		[Parameter(Mandatory=$True,ParameterSetName='objects')]
+		[int]$Version
+	)
+	try
+	{
+		$ErrorActionPreference = 'Stop';
+		$Error.Clear();
+
+		$Properties = New-Object -TypeName psobject -Property @{
+			Category = $Category
+			DisplayName = $DisplayName
+			Query = $OmsQuery
+			Version = $Version
+		}
+
+		if ($Subscription)
+		{
+			$ResourceId = "/subscriptions/$($Subscription.SubscriptionId)/resourceGroups/$($Workspace.ResourceGroupName)/providers/Microsoft.OperationalInsights/workspaces/$($Workspace.Name)/savedSearches/$($SavedSearchName)";
+		}
+		else
+		{
+			$ResourceId = "/subscriptions/$($SubscriptionId)/resourceGroups/$($ResourceGroupName)/providers/Microsoft.OperationalInsights/workspaces/$($WorkspaceName)/savedSearches/$($SavedSearchName)";
+		}
+
+		New-AzureRmResource -ResourceId $ResourceId -ApiVersion "2015-03-20" -Properties $Properties -Force;
+	}
+	catch
+	{
+		throw $_.Exception;
+	}
+}
+Function Set-OMSSavedSearch
+{
+	<#
+		.SYNOPSIS
+		.DESCRIPTION
+		.PARAMETER
+		.EXAMPLE
+		.NOTES
+			You will need to be logged into the subscription for this to work.
+			Please use the Login-AzureRmAccount to access the Azure Subscription.
+		.LINK
+	#>
+	[CmdletBinding()]
+	param
+	(
+		[Parameter(Mandatory=$True,ParameterSetName='strings',Position=1)]
+		[string]$SubscriptionId,
+		[Parameter(Mandatory=$True,ParameterSetName='strings',Position=2)]
+		[string]$ResourceGroupName,
+		[Parameter(Mandatory=$True,ParameterSetName='strings',Position=3)]
+		[string]$WorkspaceName,
+		[Parameter(Mandatory=$True,ParameterSetName='objects',Position=1)]
+		[object]$Subscription,
+		[Parameter(Mandatory=$True,ParameterSetName='objects',Position=2)]
+		[object]$Workspace,
+		[Parameter(Mandatory=$True,ParameterSetName='objects')]
+		[object]$SavedSearch,
+		[Parameter(Mandatory=$True,ParameterSetName='strings')]
+		[object]$SavedSearchName,
+		[Parameter(Mandatory=$False,ParameterSetName='strings')]
+		[Parameter(Mandatory=$False,ParameterSetName='objects')]
+		[string]$DisplayName,
+		[Parameter(Mandatory=$False,ParameterSetName='strings')]
+		[Parameter(Mandatory=$False,ParameterSetName='objects')]
+		[string]$Category,
+		[Parameter(Mandatory=$False,ParameterSetName='strings')]
+		[Parameter(Mandatory=$False,ParameterSetName='objects')]
+		[string]$OmsQuery,
+		[Parameter(Mandatory=$False,ParameterSetName='strings')]
+		[Parameter(Mandatory=$False,ParameterSetName='objects')]
+		[int]$Version
+	)
+	try
+	{
+		$ErrorActionPreference = 'Stop';
+		$Error.Clear();
+
+		if ($SavedSearchName)
+		{
+			$SavedSearch = Get-OMSSavedSearch -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -WorkspaceName $WorkspaceName -SavedSearchName $SavedSearchName;
+		}
+
+		$CurrentProperties = $SavedSearch.Properties;
+
+		if ($DisplayName){$CurrentProperties.DisplayName = $DisplayName};
+		if ($Category){$CurrentProperties.Category = $Category};
+		if ($OmsQuery){$CurrentProperties.Query = $OmsQuery};
+		if ($Version){$CurrentProperties.Version = $Version};
+
+		if ($Subscription)
+		{
+			$SavedSearchName = $SavedSearch.ResourceName.Split('/')[1];
+			$ResourceId = "/subscriptions/$($Subscription.SubscriptionId)/resourceGroups/$($Workspace.ResourceGroupName)/providers/Microsoft.OperationalInsights/workspaces/$($Workspace.Name)/savedSearches/$($SavedSearchName)";
+		}
+		else
+		{
+			$ResourceId = "/subscriptions/$($SubscriptionId)/resourceGroups/$($ResourceGroupName)/providers/Microsoft.OperationalInsights/workspaces/$($WorkspaceName)/savedSearches/$($SavedSearchName)";
+		}
+
+		Set-AzureRmResource -ResourceId $ResourceId -ApiVersion "2015-03-20" -Properties $CurrentProperties -Force;
+	}
+	catch
+	{
+		throw $_;
 	}
 }
