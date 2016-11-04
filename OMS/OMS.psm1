@@ -83,6 +83,6 @@ Function Get-OMSWorkspace
 	}
 	catch
 	{
-		throw $_.Exception;
+		throw $_;
 	}
 }
