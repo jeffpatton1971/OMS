@@ -499,7 +499,7 @@ Function Set-OMSSavedSearch
 		{
 			$SavedSearch = Get-OMSSavedSearch -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -WorkspaceName $WorkspaceName -SavedSearchName $SavedSearchName;
 		}
-
+		
 		$CurrentProperties = $SavedSearch.Properties;
 
 		if ($DisplayName){$CurrentProperties.DisplayName = $DisplayName};
